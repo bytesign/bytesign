@@ -1,0 +1,92 @@
+#!/bin/bash
+
+assigned_flags=("v","c","h","b")
+runMain=true
+verbose=false
+removeClass=false
+baseDir=$(pwd)
+
+if [[ $# == 2 ]]
+    then
+    dir=$2
+    flags=$1
+elif [[ $# == 1 ]]
+    then
+    if [[ "$1" == "h" ]]
+        then
+        flags=$1
+    else
+        dir=$1
+    fi
+else
+    echo "improper arguments, should be flags then dir or just dir"
+    exit 0
+fi
+
+for i in $(seq 1 ${#flags})
+    do
+    flag="${flags:i-1:1}"
+    if [[ "$flag" == "v" ]]
+        then
+        verbose=true
+    fi
+    if [[ "$flag" == "c" ]]
+        then
+        runMain=false
+    fi
+    if [[ "$flag" == "r" ]]
+        then
+        removeClass=true
+    fi
+    if [[ "$flag" == "b" ]]
+        then
+        changeBaseDir=true
+        echo "what is the base directory? :"
+        read baseDir
+    fi
+    if [[ "$flag" == "h" ]]
+        then
+        echo "this program compiles all the java files in a directory inside /home/johnc/codium/college and then runs Main.java by default
+        -v : verbose, tells you what the program is doing at each step
+        -c : compile only, doesn't attempt to execute Main.java
+        -r : remove class files so they can be replaced. may fix some issues with compiling
+        -h : help, displays this text"
+        exit 0
+    fi
+done;
+cd $baseDir
+for file in $(ls $baseDir/$dir)
+    do
+    if [[ $file == *.class && $removeClass == true ]]
+        then
+        rm $baseDir/$dir/$file
+        if [[ $verbose == true ]]
+            then
+            echo "$file has been removed"
+        fi
+    fi
+    if [[ $file == *.java ]]
+        then
+        javac $baseDir/$dir/$file
+        if [[ $verbose == true ]]
+            then
+            echo "$file is compiled"
+        fi
+    fi
+done;
+if [[ $runMain == true ]]
+    then
+    for file in $(ls $baseDir/$dir)
+        do
+            if [[ $file == Main.java ]]
+                then
+                if [[ $verbose == true ]]
+                    then
+                    echo "running Main"
+                fi
+                java $dir.Main
+                exit 0
+            fi
+    done;
+    echo "Couldn't find Main.java"
+fi
